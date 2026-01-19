@@ -46,6 +46,11 @@
             font-weight: bold;
             color: #1e40af;
         }
+        .wind-arrow {
+            display: inline-block;
+            transition: transform 0.5s ease;
+            vertical-align: middle;
+        }
     </style>
 </head>
 <body class="bg-slate-50 p-4 md:p-8 flex flex-col min-h-screen">
@@ -83,15 +88,15 @@
         <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mb-8">
             <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
                 <h3 class="font-semibold text-blue-800 mb-1">Live Conditions</h3>
-                <p class="text-blue-700">Markers show real-time temperatures. Popups show current wind, conditions, and today's expected maximum.</p>
+                <p class="text-blue-700">Markers show real-time temperatures. Popups show current wind speed and direction.</p>
             </div>
             <div class="bg-green-50 p-4 rounded-lg border border-green-100">
                 <h3 class="font-semibold text-green-800 mb-1">Dynamic Bounding Box</h3>
-                <p class="text-green-700">The map automatically zooms to the selected region with a 50km protective buffer.</p>
+                <p class="text-green-700">The map automatically zooms to the selected region with a protective buffer.</p>
             </div>
             <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
                 <h3 class="font-semibold text-slate-800 mb-1">Data Updates</h3>
-                <p class="text-slate-700">Weather data is fetched directly from the latest BOM model runs via Open-Meteo.</p>
+                <p class="text-slate-700">Weather data is fetched directly from Open-Meteo using real-time models.</p>
             </div>
         </div>
 
@@ -143,7 +148,7 @@
                 { name: "Tweed Heads", lat: -28.1833, lon: 153.5333 }, 
                 { name: "Eden", lat: -37.0627, lon: 149.9044 }, 
                 { name: "Bourke", lat: -30.0906, lon: 145.9378 }, 
-                { name: "Tiboorburra", lat: -29.4333, lon: 142.0167 }, 
+                { name: "Tibooburra", lat: -29.4333, lon: 142.0167 }, 
                 { name: "Tamworth", lat: -31.0927, lon: 150.9320 }, 
                 { name: "Wagga Wagga", lat: -35.1150, lon: 147.3678 }, 
                 { name: "Dubbo", lat: -32.2432, lon: 148.6021 }, 
@@ -163,13 +168,13 @@
                 { name: "Townsville", lat: -19.2590, lon: 146.8169 }, 
                 { name: "Rockhampton", lat: -23.3774, lon: 150.5100 }, 
                 { name: "Longreach", lat: -23.4411, lon: 144.2494 }, 
-                { name: "Birdsville", lat: -25.8986, lon: 139.3514 }, 
-                { name: "Charleville", lat: -26.4017, lon: 146.2411 }, 
                 { name: "Mackay", lat: -21.1411, lon: 149.1858 }, 
-                { name: "Maryborough", lat: -25.5378, lon: 152.7022 }, 
-                { name: "Hughenden", lat: -20.8433, lon: 144.1983 }, 
-                { name: "Georgetown", lat: -18.2917, lon: 143.5472 }, 
-                { name: "Roma", lat: -26.5731, lon: 148.7875 } 
+                { name: "Roma", lat: -26.5731, lon: 148.7875 },
+                { name: "Birdsville", lat: -25.8988, lon: 139.3514 },
+                { name: "Bundaberg", lat: -24.8661, lon: 152.3489 },
+                { name: "Toowoomba", lat: -27.5598, lon: 151.9507 },
+                { name: "Gladstone", lat: -23.8427, lon: 151.2593 },
+                { name: "Charleville", lat: -26.4422, lon: 146.2428 }
             ],
             WA: [
                 { name: "Perth", lat: -31.9505, lon: 115.8605 },
@@ -181,12 +186,12 @@
                 { name: "Broome", lat: -17.9614, lon: 122.2359 }, 
                 { name: "Port Hedland", lat: -20.3107, lon: 118.6011 }, 
                 { name: "Newman", lat: -23.3539, lon: 119.7319 }, 
-                { name: "Carnarvon", lat: -24.8814, lon: 113.6622 }, 
-                { name: "Meekatharra", lat: -26.5917, lon: 118.4983 }, 
                 { name: "Kalgoorlie", lat: -30.7489, lon: 121.4658 }, 
-                { name: "Geraldton", lat: -28.7744, lon: 114.6089 }, 
-                { name: "Esperance", lat: -33.8614, lon: 121.8914 }, 
-                { name: "Warburton", lat: -26.1333, lon: 126.5833 } 
+                { name: "Esperance", lat: -33.8614, lon: 121.8914 },
+                { name: "Geraldton", lat: -28.7744, lon: 114.6089 },
+                { name: "Carnarvon", lat: -24.8877, lon: 113.6621 },
+                { name: "Meekatharra", lat: -26.5932, lon: 118.4984 },
+                { name: "Bunbury", lat: -33.3271, lon: 115.6369 }
             ],
             SA: [
                 { name: "Adelaide", lat: -34.9285, lon: 138.6007 },
@@ -196,31 +201,31 @@
                 { name: "Marla", lat: -27.1594, lon: 133.6219 }, 
                 { name: "Renmark", lat: -34.1667, lon: 140.7500 }, 
                 { name: "Port Lincoln", lat: -34.7333, lon: 135.8667 }, 
-                { name: "Whyalla", lat: -33.0333, lon: 137.5833 }, 
-                { name: "Coober Pedy", lat: -29.0139, lon: 134.7544 }, 
-                { name: "Port Pirie", lat: -33.1833, lon: 138.0167 }, 
-                { name: "Victor Harbor", lat: -35.5500, lon: 138.6167 }, 
-                { name: "Moomba", lat: -28.1139, lon: 140.1983 }, 
-                { name: "Roxby Downs", lat: -30.5622, lon: 136.8789 }, 
-                { name: "Kingscote", lat: -35.6544, lon: 137.6403 }, 
-                { name: "Bordertown", lat: -36.3139, lon: 140.7658 } 
+                { name: "Coober Pedy", lat: -29.0139, lon: 134.7544 },
+                { name: "Port Augusta", lat: -32.4931, lon: 137.7625 },
+                { name: "Whyalla", lat: -33.0333, lon: 137.5833 },
+                { name: "Victor Harbor", lat: -35.5500, lon: 138.6167 },
+                { name: "Naracoorte", lat: -36.9542, lon: 140.7431 },
+                { name: "Tarcoola", lat: -30.7042, lon: 134.5619 },
+                { name: "Roxby Downs", lat: -30.5630, lon: 136.8770 },
+                { name: "Border Town", lat: -36.3167, lon: 140.7667 }
             ],
             TAS: [
                 { name: "Hobart", lat: -42.8821, lon: 147.3272 },
                 { name: "Smithton", lat: -40.8436, lon: 145.1206 }, 
                 { name: "St Helens", lat: -41.3219, lon: 148.2472 }, 
-                { name: "Strathgordon", lat: -42.7667, lon: 146.0500 }, 
                 { name: "Queenstown", lat: -42.0833, lon: 145.5500 }, 
-                { name: "Launceston", lat: -41.4332, lon: 147.1441 }, 
-                { name: "Devonport", lat: -41.1771, lon: 146.3582 }, 
-                { name: "Burnie", lat: -41.0558, lon: 145.9081 }, 
-                { name: "Bicheno", lat: -41.8750, lon: 148.3000 }, 
-                { name: "Oatlands", lat: -42.3000, lon: 147.3667 }, 
-                { name: "Swansea", lat: -42.1250, lon: 148.0750 }, 
-                { name: "Huonville", lat: -43.0294, lon: 147.0294 }, 
-                { name: "Scottsdale", lat: -41.1594, lon: 147.5147 }, 
-                { name: "George Town", lat: -41.1000, lon: 146.8167 }, 
-                { name: "Rosebery", lat: -41.7767, lon: 145.5342 } 
+                { name: "Launceston", lat: -41.4332, lon: 147.1441 },
+                { name: "Burnie", lat: -41.0558, lon: 145.9081 },
+                { name: "Devonport", lat: -41.1771, lon: 146.3452 },
+                { name: "Strahan", lat: -42.1500, lon: 145.3333 },
+                { name: "Geeveston", lat: -43.1667, lon: 146.9167 },
+                { name: "Swansea", lat: -42.1220, lon: 148.0750 },
+                { name: "Currie (King Is)", lat: -39.9311, lon: 143.8508 },
+                { name: "Whitemark (Flinders Is)", lat: -40.1200, lon: 148.0167 },
+                { name: "New Norfolk", lat: -42.7828, lon: 147.0594 },
+                { name: "Ross", lat: -42.0309, lon: 147.4934 },
+                { name: "Scottsdale", lat: -41.1583, lon: 147.5147 }
             ],
             NT: [
                 { name: "Darwin", lat: -12.4634, lon: 130.8456 },
@@ -228,36 +233,37 @@
                 { name: "Katherine", lat: -14.4652, lon: 132.2635 },
                 { name: "Tennant Creek", lat: -19.6433, lon: 134.1901 },
                 { name: "Nhulunbuy", lat: -12.1833, lon: 136.7833 },
-                { name: "Yulara", lat: -25.2417, lon: 131.0000 },
+                { name: "Yulara (Uluru)", lat: -25.2425, lon: 130.9889 },
+                { name: "Jabiru", lat: -12.6681, lon: 132.8361 },
+                { name: "Alyangula", lat: -13.8475, lon: 136.4192 },
+                { name: "Elliott", lat: -17.5539, lon: 133.5383 },
+                { name: "Timber Creek", lat: -15.6461, lon: 130.4756 },
                 { name: "Borroloola", lat: -16.0667, lon: 136.3000 },
-                { name: "Wadeye", lat: -14.2333, lon: 129.5167 },
-                { name: "Jabiru", lat: -12.6719, lon: 132.8361 },
-                { name: "Maningrida", lat: -12.0500, lon: 134.2333 },
-                { name: "Ngukurr", lat: -14.7333, lon: 134.7333 },
-                { name: "Lajamanu", lat: -18.3333, lon: 130.6333 },
-                { name: "Yuendumu", lat: -22.2500, lon: 131.8000 },
-                { name: "Timber Creek", lat: -15.6500, lon: 130.4667 },
-                { name: "Ti Tree", lat: -22.1333, lon: 133.4167 }
+                { name: "Lajamanu", lat: -18.3333, lon: 132.8333 },
+                { name: "Kaltukatjara", lat: -25.0244, lon: 129.2319 },
+                { name: "Tiwi Islands", lat: -11.6667, lon: 130.8333 },
+                { name: "Mataranka", lat: -14.9239, lon: 133.0675 }
             ],
             ACT: [
                 { name: "Canberra City", lat: -35.2809, lon: 149.1300 },
                 { name: "Tuggeranong", lat: -35.4167, lon: 149.0667 },
                 { name: "Gungahlin", lat: -35.1833, lon: 149.1333 },
-                { name: "Belconnen", lat: -35.2333, lon: 149.0667 },
-                { name: "Woden", lat: -35.3500, lon: 149.0833 },
-                { name: "Weston Creek", lat: -35.3333, lon: 149.0500 },
-                { name: "Hall", lat: -35.1667, lon: 149.0667 },
-                { name: "Tharwa", lat: -35.5081, lon: 149.0683 },
-                { name: "Williamsdale", lat: -35.5833, lon: 149.1333 },
-                { name: "Uriarra Village", lat: -35.2500, lon: 148.9500 },
-                { name: "Mount Stromlo", lat: -35.3167, lon: 149.0000 },
-                { name: "Majura", lat: -35.2667, lon: 149.2000 },
-                { name: "Fyshwick", lat: -35.3333, lon: 149.1667 },
-                { name: "Hume", lat: -35.3833, lon: 149.1667 },
-                { name: "Kowen", lat: -35.3167, lon: 149.2667 }
+                { name: "Belconnen", lat: -35.2389, lon: 149.0661 },
+                { name: "Woden Valley", lat: -35.3456, lon: 149.0856 },
+                { name: "Hall", lat: -35.1683, lon: 149.0683 },
+                { name: "Tharwa", lat: -35.5083, lon: 149.0667 },
+                { name: "Oaks Estate", lat: -35.3444, lon: 149.2319 },
+                { name: "Uriarra Village", lat: -35.2467, lon: 148.9481 },
+                { name: "Molonglo Valley", lat: -35.2917, lon: 149.0333 },
+                { name: "Weston Creek", lat: -35.3411, lon: 149.0531 },
+                { name: "Dickson", lat: -35.2503, lon: 149.1367 },
+                { name: "Fyshwick", lat: -35.3283, lon: 149.1683 },
+                { name: "Hume", lat: -35.3850, lon: 149.1617 },
+                { name: "Nicholls", lat: -35.1894, lon: 149.0911 }
             ]
         };
 
+        // Populate ALL and CAPITALS after all states are defined
         DATA_POINTS.CAPITALS = [
             DATA_POINTS.NSW[0], DATA_POINTS.VIC[0], DATA_POINTS.QLD[0], 
             DATA_POINTS.WA[0], DATA_POINTS.SA[0], DATA_POINTS.TAS[0], 
@@ -266,13 +272,9 @@
 
         DATA_POINTS.ALL = [
             ...DATA_POINTS.CAPITALS,
-            DATA_POINTS.NSW[1], DATA_POINTS.NSW[4], DATA_POINTS.NSW[5], 
-            DATA_POINTS.VIC[1], DATA_POINTS.VIC[2], 
-            DATA_POINTS.QLD[1], DATA_POINTS.QLD[2], DATA_POINTS.QLD[4], DATA_POINTS.QLD[8], 
-            DATA_POINTS.WA[1], DATA_POINTS.WA[2], DATA_POINTS.WA[4], DATA_POINTS.WA[14], 
-            DATA_POINTS.SA[1], DATA_POINTS.SA[3], DATA_POINTS.SA[11], 
-            DATA_POINTS.TAS[4], 
-            DATA_POINTS.NT[5] 
+            DATA_POINTS.NSW[1], DATA_POINTS.VIC[1], DATA_POINTS.QLD[1], 
+            DATA_POINTS.WA[1], DATA_POINTS.SA[1], DATA_POINTS.NT[1],
+            DATA_POINTS.TAS[1], DATA_POINTS.QLD[2], DATA_POINTS.WA[2]
         ];
 
         const weatherCodes = {
@@ -283,6 +285,12 @@
 
         function getWeatherDesc(code) { return weatherCodes[code] || "Variable Conditions"; }
         function getColor(t) { return t > 30 ? "#ef4444" : t > 25 ? "#f59e0b" : t > 20 ? "#10b981" : "#3b82f6"; }
+        
+        function getWindDirection(deg) {
+            const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+            const index = Math.round(deg / 45) % 8;
+            return directions[index];
+        }
 
         let map, markersLayer;
 
@@ -317,24 +325,31 @@
             if (!points || points.length === 0 || !map) return;
             let minLat = null, maxLat = null, minLon = null, maxLon = null;
             points.forEach(p => {
-                if (typeof p.lat !== 'number' || typeof p.lon !== 'number' || isNaN(p.lat) || isNaN(p.lon)) return;
-                if (minLat === null || p.lat < minLat) minLat = p.lat;
-                if (maxLat === null || p.lat > maxLat) maxLat = p.lat;
-                if (minLon === null || p.lon < minLon) minLon = p.lon;
-                if (maxLon === null || p.lon > maxLon) maxLon = p.lon;
+                const lat = parseFloat(p.lat);
+                const lon = parseFloat(p.lon);
+                if (isNaN(lat) || isNaN(lon)) return;
+                
+                if (minLat === null || lat < minLat) minLat = lat;
+                if (maxLat === null || lat > maxLat) maxLat = lat;
+                if (minLon === null || lon < minLon) minLon = lon;
+                if (maxLon === null || lon > maxLon) maxLon = lon;
             });
-            if (minLat === null) return;
-            const buffer = 0.45; 
+            
+            if (minLat === null || maxLat === null || minLon === null || maxLon === null) return;
+            
+            const buffer = 0.55; // Slightly larger buffer for better visualization
             try {
                 const bounds = L.latLngBounds([minLat - buffer, minLon - buffer], [maxLat + buffer, maxLon + buffer]);
-                if (bounds.isValid()) map.flyToBounds(bounds, { padding: [20, 20], duration: 1.5 });
-            } catch (e) { console.warn(e); }
+                if (bounds.isValid()) {
+                    map.flyToBounds(bounds, { padding: [20, 20], duration: 1.5 });
+                }
+            } catch (e) { console.warn("Boundary error:", e); }
         }
 
         async function updateView(regionKey) {
             const region = REGIONS[regionKey];
             const towns = DATA_POINTS[regionKey];
-            if (!region || !towns) return;
+            if (!region || !towns || !map) return;
 
             document.getElementById('loading').style.display = 'flex';
             document.getElementById('map-title').textContent = `${region.name} Live Weather`;
@@ -342,24 +357,33 @@
             zoomToBuffer(towns);
 
             try {
-                const lats = towns.map(t => t.lat).join(',');
-                const lons = towns.map(t => t.lon).join(',');
-                // Added daily=temperature_2m_max to the request
-                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lons}&current=temperature_2m,weather_code,wind_speed_10m&daily=temperature_2m_max&timezone=Australia%2FSydney&forecast_days=1`;
+                const validTowns = towns.filter(t => !isNaN(parseFloat(t.lat)) && !isNaN(parseFloat(t.lon)));
+                if (validTowns.length === 0) throw new Error("No valid coordinates for region");
+
+                // Split requests if towns > 20 to avoid API limits if necessary, though 15 is fine.
+                const lats = validTowns.map(t => t.lat).join(',');
+                const lons = validTowns.map(t => t.lon).join(',');
+                
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lons}&current=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m&daily=temperature_2m_max&timezone=Australia%2FSydney&forecast_days=1`;
 
                 const response = await fetch(url);
                 const data = await response.json();
                 const results = Array.isArray(data) ? data : [data];
                 
                 results.forEach((res, index) => {
-                    const town = towns[index];
+                    const town = validTowns[index];
                     if (!town || !res.current) return;
 
                     const current = res.current;
                     const temp = Math.round(current.temperature_2m);
+                    const windSpd = Math.round(current.wind_speed_10m);
+                    const windDeg = current.wind_direction_10m;
+                    const windCard = getWindDirection(windDeg);
                     const todayMax = res.daily?.temperature_2m_max?.[0];
                     const maxDisplay = todayMax !== undefined ? Math.round(todayMax) + '°C' : 'N/A';
                     
+                    const googleWeatherUrl = `https://www.google.com/search?q=weather+${encodeURIComponent(town.name + ', ' + regionKey + ', Australia')}`;
+
                     const marker = L.circleMarker([town.lat, town.lon], {
                         radius: 14,
                         fillColor: getColor(temp),
@@ -370,11 +394,44 @@
                     });
 
                     marker.bindPopup(`
-                        <div class="weather-popup">
+                        <div class="weather-popup" style="min-width: 200px;">
                             <b>${town.name}</b><hr class="my-1">
-                            <p><strong>Now:</strong> ${temp}°C (${getWeatherDesc(current.weather_code)})</p>
-                            <p><strong>Today's Max:</strong> <span class="text-orange-600 font-bold">${maxDisplay}</span></p>
-                            <p><strong>Wind:</strong> ${current.wind_speed_10m} km/h</p>
+                            <div class="grid grid-cols-2 gap-2 text-sm mb-2">
+                                <div>
+                                    <span class="text-gray-500 text-xs font-semibold">TEMP</span><br>
+                                    <strong class="text-lg">${temp}°C</strong>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500 text-xs font-semibold">TODAY MAX</span><br>
+                                    <span class="text-orange-600 font-bold text-lg">${maxDisplay}</span>
+                                </div>
+                            </div>
+                            <p class="text-xs mb-1"><strong>Condition:</strong> ${getWeatherDesc(current.weather_code)}</p>
+                            <div class="bg-slate-50 p-2 rounded border border-slate-100 mb-2">
+                                <span class="text-gray-500 text-[10px] font-bold uppercase block mb-1">Wind</span>
+                                <div class="flex items-center gap-3">
+                                    <div class="flex flex-col">
+                                        <span class="text-xs font-bold text-slate-700">${windSpd} <span class="text-[10px] font-normal">km/h</span></span>
+                                    </div>
+                                    <div class="flex items-center gap-1 border-l pl-3 border-slate-200">
+                                        <div class="wind-arrow" style="transform: rotate(${windDeg}deg)">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1e40af" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                                <line x1="12" y1="19" x2="12" y2="5"></line>
+                                                <polyline points="5 12 12 5 19 12"></polyline>
+                                            </svg>
+                                        </div>
+                                        <span class="text-xs font-bold text-blue-800">${windCard}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="pt-2 border-t border-slate-100 text-center">
+                                <a href="${googleWeatherUrl}" target="_blank" class="text-blue-600 hover:text-blue-800 text-xs font-semibold flex items-center justify-center gap-1">
+                                    <span>View Details</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                    </svg>
+                                </a>
+                            </div>
                         </div>
                     `);
 
@@ -409,10 +466,15 @@
 
         window.onload = function() {
             initMap();
-            setTimeout(() => { updateView('VIC'); }, 100);
+            setTimeout(() => { 
+                if (map) updateView('VIC'); 
+            }, 100);
+            
             setInterval(() => {
-                const currentRegion = document.getElementById('region-select').value;
-                updateView(currentRegion);
+                const select = document.getElementById('region-select');
+                if (select && map) {
+                    updateView(select.value);
+                }
             }, 900000);
         };
     </script>
