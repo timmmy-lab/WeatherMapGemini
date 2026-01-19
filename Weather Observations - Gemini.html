@@ -59,15 +59,15 @@
             <div class="flex items-center gap-2 bg-white p-2 rounded-lg shadow-sm border border-slate-200">
                 <label for="region-select" class="text-sm font-semibold text-slate-700 ml-1">Select Region:</label>
                 <select id="region-select" class="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block p-2">
-                    <option value="ALL">All Australia (Even Spread)</option>
-                    <option value="CAPITALS">Major Cities Only</option>
+                    <option value="ALL">All Australia</option>
+                    <option value="CAPITALS">Major Cities</option>
                     <optgroup label="States & Territories">
-                        <option value="NSW">New South Wales (Geographic Spread)</option>
-                        <option value="VIC" selected>Victoria (Geographic Spread)</option>
-                        <option value="QLD">Queensland (Geographic Spread)</option>
-                        <option value="WA">Western Australia (Geographic Spread)</option>
-                        <option value="SA">South Australia (Geographic Spread)</option>
-                        <option value="TAS">Tasmania (Geographic Spread)</option>
+                        <option value="NSW">New South Wales</option>
+                        <option value="VIC" selected>Victoria</option>
+                        <option value="QLD">Queensland</option>
+                        <option value="WA">Western Australia</option>
+                        <option value="SA">South Australia</option>
+                        <option value="TAS">Tasmania</option>
                         <option value="NT">Northern Territory</option>
                         <option value="ACT">ACT</option>
                     </optgroup>
@@ -82,16 +82,16 @@
 
         <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mb-8">
             <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                <h3 class="font-semibold text-blue-800 mb-1">Geographic Distribution</h3>
-                <p class="text-blue-700">Markers are distributed across each state's compass points to provide an even reading of inland and coastal weather.</p>
+                <h3 class="font-semibold text-blue-800 mb-1">Live Conditions</h3>
+                <p class="text-blue-700">Markers show real-time temperatures. Popups show current wind, conditions, and today's expected maximum.</p>
             </div>
             <div class="bg-green-50 p-4 rounded-lg border border-green-100">
-                <h3 class="font-semibold text-green-800 mb-1">Automatic Sync</h3>
-                <p class="text-green-700">Data is synced automatically. The map refreshes every 15 minutes to stay current.</p>
+                <h3 class="font-semibold text-green-800 mb-1">Dynamic Bounding Box</h3>
+                <p class="text-green-700">The map automatically zooms to the selected region with a 50km protective buffer.</p>
             </div>
             <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
-                <h3 class="font-semibold text-slate-800 mb-1">Interactive Map</h3>
-                <p class="text-slate-700">Toggle regions in the top right. View temperatures across the vast Australian interior or specific states.</p>
+                <h3 class="font-semibold text-slate-800 mb-1">Data Updates</h3>
+                <p class="text-slate-700">Weather data is fetched directly from the latest BOM model runs via Open-Meteo.</p>
             </div>
         </div>
 
@@ -102,128 +102,125 @@
                 </svg>
                 <span><strong>Data Source:</strong> Weather data provided by <a href="https://open-meteo.com/" target="_blank" class="text-blue-600 hover:underline">Open-Meteo</a>.</span>
             </div>
-            <div class="text-center md:text-right">
-                Underlying meteorological data sourced from the <strong>Australian Bureau of Meteorology (BOM)</strong>.
-            </div>
         </footer>
     </div>
 
     <script>
         const REGIONS = {
-            ALL: { name: "Australia", center: [-25.2744, 133.7751], zoom: 4 },
-            CAPITALS: { name: "Major Cities", center: [-28.0, 135.0], zoom: 4 },
-            NSW: { name: "New South Wales", center: [-31.2532, 146.9211], zoom: 6 },
-            VIC: { name: "Victoria", center: [-36.8, 144.5], zoom: 7 },
-            QLD: { name: "Queensland", center: [-20.9176, 142.7028], zoom: 5 },
-            WA: { name: "Western Australia", center: [-25.0, 122.0], zoom: 5 },
-            SA: { name: "South Australia", center: [-30.0, 136.0], zoom: 6 },
-            TAS: { name: "Tasmania", center: [-42.0, 146.6], zoom: 7 },
-            NT: { name: "Northern Territory", center: [-19.4914, 132.5510], zoom: 5 },
-            ACT: { name: "ACT", center: [-35.4735, 149.0124], zoom: 10 }
+            ALL: { name: "Australia" },
+            CAPITALS: { name: "Major Cities" },
+            NSW: { name: "New South Wales" },
+            VIC: { name: "Victoria" },
+            QLD: { name: "Queensland" },
+            WA: { name: "Western Australia" },
+            SA: { name: "South Australia" },
+            TAS: { name: "Tasmania" },
+            NT: { name: "Northern Territory" },
+            ACT: { name: "ACT" }
         };
 
         const DATA_POINTS = {
             VIC: [
                 { name: "Melbourne", lat: -37.8136, lon: 144.9631 },
-                { name: "Mildura", lat: -34.1847, lon: 142.1483 }, // NW
-                { name: "Mallacoota", lat: -37.5500, lon: 149.7500 }, // SE
-                { name: "Portland", lat: -38.3460, lon: 141.6030 }, // SW
-                { name: "Wodonga", lat: -36.1214, lon: 146.8872 }, // NE
-                { name: "Bendigo", lat: -36.7570, lon: 144.2794 }, // Central
-                { name: "Horsham", lat: -36.7089, lon: 142.2030 }, // West
-                { name: "Bairnsdale", lat: -37.8280, lon: 147.6250 }, // East
-                { name: "Echuca", lat: -36.1360, lon: 144.7470 }, // North
-                { name: "Warrnambool", lat: -38.3833, lon: 142.4835 }, // South Coast
-                { name: "Swan Hill", lat: -35.3333, lon: 143.5500 }, // NW Interior
-                { name: "Omeo", lat: -37.0950, lon: 147.5950 }, // Alps
-                { name: "Geelong", lat: -38.1499, lon: 144.3617 }, // Bay
-                { name: "Ballarat", lat: -37.5622, lon: 143.8503 }, // Goldfields
-                { name: "Shepparton", lat: -36.3833, lon: 145.4236 } // Goulburn
+                { name: "Mildura", lat: -34.1847, lon: 142.1483 }, 
+                { name: "Mallacoota", lat: -37.5500, lon: 149.7500 }, 
+                { name: "Portland", lat: -38.3460, lon: 141.6030 }, 
+                { name: "Wodonga", lat: -36.1214, lon: 146.8872 }, 
+                { name: "Bendigo", lat: -36.7570, lon: 144.2794 }, 
+                { name: "Horsham", lat: -36.7089, lon: 142.2030 }, 
+                { name: "Bairnsdale", lat: -37.8280, lon: 147.6250 }, 
+                { name: "Echuca", lat: -36.1360, lon: 144.7470 }, 
+                { name: "Warrnambool", lat: -38.3833, lon: 142.4835 }, 
+                { name: "Swan Hill", lat: -35.3333, lon: 143.5500 }, 
+                { name: "Omeo", lat: -37.0950, lon: 147.5950 }, 
+                { name: "Geelong", lat: -38.1499, lon: 144.3617 }, 
+                { name: "Ballarat", lat: -37.5622, lon: 143.8503 }, 
+                { name: "Shepparton", lat: -36.3833, lon: 145.4236 } 
             ],
             NSW: [
                 { name: "Sydney", lat: -33.8688, lon: 151.2093 },
-                { name: "Broken Hill", lat: -31.9539, lon: 141.4539 }, // Far West
-                { name: "Tweed Heads", lat: -28.1833, lon: 153.5333 }, // Far North Coast
-                { name: "Eden", lat: -37.0627, lon: 149.9044 }, // Far South Coast
-                { name: "Bourke", lat: -30.0906, lon: 145.9378 }, // NW
-                { name: "Tiboorburra", lat: -29.4333, lon: 142.0167 }, // Far Corner
-                { name: "Tamworth", lat: -31.0927, lon: 150.9320 }, // New England
-                { name: "Wagga Wagga", lat: -35.1150, lon: 147.3678 }, // Riverina
-                { name: "Dubbo", lat: -32.2432, lon: 148.6021 }, // Central West
-                { name: "Coffs Harbour", lat: -30.2963, lon: 153.1141 }, // Mid North Coast
-                { name: "Albury", lat: -36.0737, lon: 146.9135 }, // Border
-                { name: "Wilcannia", lat: -31.5583, lon: 143.3778 }, // Inland
-                { name: "Narrabri", lat: -30.3250, lon: 149.7833 }, // North Central
-                { name: "Cooma", lat: -36.2350, lon: 149.1250 }, // Snowies
-                { name: "Newcastle", lat: -32.9283, lon: 151.7817 } // Hunter
+                { name: "Broken Hill", lat: -31.9539, lon: 141.4539 }, 
+                { name: "Tweed Heads", lat: -28.1833, lon: 153.5333 }, 
+                { name: "Eden", lat: -37.0627, lon: 149.9044 }, 
+                { name: "Bourke", lat: -30.0906, lon: 145.9378 }, 
+                { name: "Tiboorburra", lat: -29.4333, lon: 142.0167 }, 
+                { name: "Tamworth", lat: -31.0927, lon: 150.9320 }, 
+                { name: "Wagga Wagga", lat: -35.1150, lon: 147.3678 }, 
+                { name: "Dubbo", lat: -32.2432, lon: 148.6021 }, 
+                { name: "Coffs Harbour", lat: -30.2963, lon: 153.1141 }, 
+                { name: "Albury", lat: -36.0737, lon: 146.9135 }, 
+                { name: "Wilcannia", lat: -31.5583, lon: 143.3778 }, 
+                { name: "Narrabri", lat: -30.3250, lon: 149.7833 }, 
+                { name: "Cooma", lat: -36.2350, lon: 149.1250 }, 
+                { name: "Newcastle", lat: -32.9283, lon: 151.7817 } 
             ],
             QLD: [
                 { name: "Brisbane", lat: -27.4698, lon: 153.0251 },
-                { name: "Cairns", lat: -16.9186, lon: 145.7710 }, // Far North
-                { name: "Mount Isa", lat: -20.7256, lon: 139.4927 }, // Far West
-                { name: "Cunnamulla", lat: -28.0667, lon: 145.6833 }, // SW
-                { name: "Weipa", lat: -12.6469, lon: 141.8767 }, // Cape York
-                { name: "Townsville", lat: -19.2590, lon: 146.8169 }, // North Coast
-                { name: "Rockhampton", lat: -23.3774, lon: 150.5100 }, // Central Coast
-                { name: "Longreach", lat: -23.4411, lon: 144.2494 }, // Central West
-                { name: "Birdsville", lat: -25.8986, lon: 139.3514 }, // Far SW Corner
-                { name: "Charleville", lat: -26.4017, lon: 146.2411 }, // South Central
-                { name: "Mackay", lat: -21.1411, lon: 149.1858 }, // Mid Coast
-                { name: "Maryborough", lat: -25.5378, lon: 152.7022 }, // Wide Bay
-                { name: "Hughenden", lat: -20.8433, lon: 144.1983 }, // Inland North
-                { name: "Georgetown", lat: -18.2917, lon: 143.5472 }, // Gulf Hinterland
-                { name: "Roma", lat: -26.5731, lon: 148.7875 } // Maranoa
+                { name: "Cairns", lat: -16.9186, lon: 145.7710 }, 
+                { name: "Mount Isa", lat: -20.7256, lon: 139.4927 }, 
+                { name: "Cunnamulla", lat: -28.0667, lon: 145.6833 }, 
+                { name: "Weipa", lat: -12.6469, lon: 141.8767 }, 
+                { name: "Townsville", lat: -19.2590, lon: 146.8169 }, 
+                { name: "Rockhampton", lat: -23.3774, lon: 150.5100 }, 
+                { name: "Longreach", lat: -23.4411, lon: 144.2494 }, 
+                { name: "Birdsville", lat: -25.8986, lon: 139.3514 }, 
+                { name: "Charleville", lat: -26.4017, lon: 146.2411 }, 
+                { name: "Mackay", lat: -21.1411, lon: 149.1858 }, 
+                { name: "Maryborough", lat: -25.5378, lon: 152.7022 }, 
+                { name: "Hughenden", lat: -20.8433, lon: 144.1983 }, 
+                { name: "Georgetown", lat: -18.2917, lon: 143.5472 }, 
+                { name: "Roma", lat: -26.5731, lon: 148.7875 } 
             ],
             WA: [
                 { name: "Perth", lat: -31.9505, lon: 115.8605 },
-                { name: "Wyndham", lat: -15.4825, lon: 128.1228 }, // Far North
-                { name: "Eucla", lat: -31.6778, lon: 128.8833 }, // Far East Border
-                { name: "Albany", lat: -35.0228, lon: 117.8814 }, // South
-                { name: "Exmouth", lat: -21.9314, lon: 114.1236 }, // NW Cape
-                { name: "Kununurra", lat: -15.7736, lon: 128.7389 }, // Kimberley
-                { name: "Broome", lat: -17.9614, lon: 122.2359 }, // NW Coast
-                { name: "Port Hedland", lat: -20.3107, lon: 118.6011 }, // Pilbara
-                { name: "Newman", lat: -23.3539, lon: 119.7319 }, // Pilbara Interior
-                { name: "Carnarvon", lat: -24.8814, lon: 113.6622 }, // Gascoyne
-                { name: "Meekatharra", lat: -26.5917, lon: 118.4983 }, // Mid West Interior
-                { name: "Kalgoorlie", lat: -30.7489, lon: 121.4658 }, // Goldfields
-                { name: "Geraldton", lat: -28.7744, lon: 114.6089 }, // Mid West Coast
-                { name: "Esperance", lat: -33.8614, lon: 121.8914 }, // SE Coast
-                { name: "Warburton", lat: -26.1333, lon: 126.5833 } // Central Desert
+                { name: "Wyndham", lat: -15.4825, lon: 128.1228 }, 
+                { name: "Eucla", lat: -31.6778, lon: 128.8833 }, 
+                { name: "Albany", lat: -35.0228, lon: 117.8814 }, 
+                { name: "Exmouth", lat: -21.9314, lon: 114.1236 }, 
+                { name: "Kununurra", lat: -15.7736, lon: 128.7389 }, 
+                { name: "Broome", lat: -17.9614, lon: 122.2359 }, 
+                { name: "Port Hedland", lat: -20.3107, lon: 118.6011 }, 
+                { name: "Newman", lat: -23.3539, lon: 119.7319 }, 
+                { name: "Carnarvon", lat: -24.8814, lon: 113.6622 }, 
+                { name: "Meekatharra", lat: -26.5917, lon: 118.4983 }, 
+                { name: "Kalgoorlie", lat: -30.7489, lon: 121.4658 }, 
+                { name: "Geraldton", lat: -28.7744, lon: 114.6089 }, 
+                { name: "Esperance", lat: -33.8614, lon: 121.8914 }, 
+                { name: "Warburton", lat: -26.1333, lon: 126.5833 } 
             ],
             SA: [
                 { name: "Adelaide", lat: -34.9285, lon: 138.6007 },
-                { name: "Oodnadatta", lat: -27.5469, lon: 135.4461 }, // Far North
-                { name: "Mount Gambier", lat: -37.8284, lon: 140.7804 }, // SE
-                { name: "Ceduna", lat: -32.1250, lon: 133.6733 }, // West Coast
-                { name: "Marla", lat: -27.1594, lon: 133.6219 }, // NW
-                { name: "Renmark", lat: -34.1667, lon: 140.7500 }, // East Riverland
-                { name: "Port Lincoln", lat: -34.7333, lon: 135.8667 }, // Eyre Peninsula
-                { name: "Whyalla", lat: -33.0333, lon: 137.5833 }, // Upper Spencer
-                { name: "Coober Pedy", lat: -29.0139, lon: 134.7544 }, // Interior
-                { name: "Port Pirie", lat: -33.1833, lon: 138.0167 }, // Mid North
-                { name: "Victor Harbor", lat: -35.5500, lon: 138.6167 }, // Fleurieu
-                { name: "Moomba", lat: -28.1139, lon: 140.1983 }, // NE Desert
-                { name: "Roxby Downs", lat: -30.5622, lon: 136.8789 }, // North Central
-                { name: "Kingscote", lat: -35.6544, lon: 137.6403 }, // Kangaroo Is.
-                { name: "Bordertown", lat: -36.3139, lon: 140.7658 } // Tatiara
+                { name: "Oodnadatta", lat: -27.5469, lon: 135.4461 }, 
+                { name: "Mount Gambier", lat: -37.8284, lon: 140.7804 }, 
+                { name: "Ceduna", lat: -32.1250, lon: 133.6733 }, 
+                { name: "Marla", lat: -27.1594, lon: 133.6219 }, 
+                { name: "Renmark", lat: -34.1667, lon: 140.7500 }, 
+                { name: "Port Lincoln", lat: -34.7333, lon: 135.8667 }, 
+                { name: "Whyalla", lat: -33.0333, lon: 137.5833 }, 
+                { name: "Coober Pedy", lat: -29.0139, lon: 134.7544 }, 
+                { name: "Port Pirie", lat: -33.1833, lon: 138.0167 }, 
+                { name: "Victor Harbor", lat: -35.5500, lon: 138.6167 }, 
+                { name: "Moomba", lat: -28.1139, lon: 140.1983 }, 
+                { name: "Roxby Downs", lat: -30.5622, lon: 136.8789 }, 
+                { name: "Kingscote", lat: -35.6544, lon: 137.6403 }, 
+                { name: "Bordertown", lat: -36.3139, lon: 140.7658 } 
             ],
             TAS: [
                 { name: "Hobart", lat: -42.8821, lon: 147.3272 },
-                { name: "Smithton", lat: -40.8436, lon: 145.1206 }, // NW
-                { name: "St Helens", lat: -41.3219, lon: 148.2472 }, // NE
-                { name: "Strathgordon", lat: -42.7667, lon: 146.0500 }, // SW
-                { name: "Queenstown", lat: -42.0833, lon: 145.5500 }, // West
-                { name: "Launceston", lat: -41.4332, lon: 147.1441 }, // North Central
-                { name: "Devonport", lat: -41.1771, lon: 146.3582 }, // North Coast
-                { name: "Burnie", lat: -41.0558, lon: 145.9081 }, // NW Coast
-                { name: "Bicheno", lat: -41.8750, lon: 148.3000 }, // East Coast
-                { name: "Oatlands", lat: -42.3000, lon: 147.3667 }, // Midlands
-                { name: "Swansea", lat: -42.1250, lon: 148.0750 }, // East
-                { name: "Huonville", lat: -43.0294, lon: 147.0294 }, // South
-                { name: "Scottsdale", lat: -41.1594, lon: 147.5147 }, // NE Interior
-                { name: "George Town", lat: -41.1000, lon: 146.8167 }, // Tamar
-                { name: "Rosebery", lat: -41.7767, lon: 145.5342 } // West Interior
+                { name: "Smithton", lat: -40.8436, lon: 145.1206 }, 
+                { name: "St Helens", lat: -41.3219, lon: 148.2472 }, 
+                { name: "Strathgordon", lat: -42.7667, lon: 146.0500 }, 
+                { name: "Queenstown", lat: -42.0833, lon: 145.5500 }, 
+                { name: "Launceston", lat: -41.4332, lon: 147.1441 }, 
+                { name: "Devonport", lat: -41.1771, lon: 146.3582 }, 
+                { name: "Burnie", lat: -41.0558, lon: 145.9081 }, 
+                { name: "Bicheno", lat: -41.8750, lon: 148.3000 }, 
+                { name: "Oatlands", lat: -42.3000, lon: 147.3667 }, 
+                { name: "Swansea", lat: -42.1250, lon: 148.0750 }, 
+                { name: "Huonville", lat: -43.0294, lon: 147.0294 }, 
+                { name: "Scottsdale", lat: -41.1594, lon: 147.5147 }, 
+                { name: "George Town", lat: -41.1000, lon: 146.8167 }, 
+                { name: "Rosebery", lat: -41.7767, lon: 145.5342 } 
             ],
             NT: [
                 { name: "Darwin", lat: -12.4634, lon: 130.8456 },
@@ -233,33 +230,49 @@
                 { name: "Nhulunbuy", lat: -12.1833, lon: 136.7833 },
                 { name: "Yulara", lat: -25.2417, lon: 131.0000 },
                 { name: "Borroloola", lat: -16.0667, lon: 136.3000 },
-                { name: "Wadeye", lat: -14.2333, lon: 129.5167 }
+                { name: "Wadeye", lat: -14.2333, lon: 129.5167 },
+                { name: "Jabiru", lat: -12.6719, lon: 132.8361 },
+                { name: "Maningrida", lat: -12.0500, lon: 134.2333 },
+                { name: "Ngukurr", lat: -14.7333, lon: 134.7333 },
+                { name: "Lajamanu", lat: -18.3333, lon: 130.6333 },
+                { name: "Yuendumu", lat: -22.2500, lon: 131.8000 },
+                { name: "Timber Creek", lat: -15.6500, lon: 130.4667 },
+                { name: "Ti Tree", lat: -22.1333, lon: 133.4167 }
             ],
             ACT: [
                 { name: "Canberra City", lat: -35.2809, lon: 149.1300 },
                 { name: "Tuggeranong", lat: -35.4167, lon: 149.0667 },
                 { name: "Gungahlin", lat: -35.1833, lon: 149.1333 },
-                { name: "Tharwa", lat: -35.5081, lon: 149.0683 }
+                { name: "Belconnen", lat: -35.2333, lon: 149.0667 },
+                { name: "Woden", lat: -35.3500, lon: 149.0833 },
+                { name: "Weston Creek", lat: -35.3333, lon: 149.0500 },
+                { name: "Hall", lat: -35.1667, lon: 149.0667 },
+                { name: "Tharwa", lat: -35.5081, lon: 149.0683 },
+                { name: "Williamsdale", lat: -35.5833, lon: 149.1333 },
+                { name: "Uriarra Village", lat: -35.2500, lon: 148.9500 },
+                { name: "Mount Stromlo", lat: -35.3167, lon: 149.0000 },
+                { name: "Majura", lat: -35.2667, lon: 149.2000 },
+                { name: "Fyshwick", lat: -35.3333, lon: 149.1667 },
+                { name: "Hume", lat: -35.3833, lon: 149.1667 },
+                { name: "Kowen", lat: -35.3167, lon: 149.2667 }
             ]
         };
 
-        // All Capitals
         DATA_POINTS.CAPITALS = [
             DATA_POINTS.NSW[0], DATA_POINTS.VIC[0], DATA_POINTS.QLD[0], 
             DATA_POINTS.WA[0], DATA_POINTS.SA[0], DATA_POINTS.TAS[0], 
             DATA_POINTS.NT[0], DATA_POINTS.ACT[0]
         ];
 
-        // All Australia: A geographic representative sample from all lists
         DATA_POINTS.ALL = [
             ...DATA_POINTS.CAPITALS,
-            DATA_POINTS.NSW[1], DATA_POINTS.NSW[4], DATA_POINTS.NSW[5], // Far West/Inland
-            DATA_POINTS.VIC[1], DATA_POINTS.VIC[2], // NW / SE
-            DATA_POINTS.QLD[1], DATA_POINTS.QLD[2], DATA_POINTS.QLD[4], DATA_POINTS.QLD[8], // Far North/West
-            DATA_POINTS.WA[1], DATA_POINTS.WA[2], DATA_POINTS.WA[4], DATA_POINTS.WA[14], // NW/East/Interior
-            DATA_POINTS.SA[1], DATA_POINTS.SA[3], DATA_POINTS.SA[11], // North/West/NE
-            DATA_POINTS.TAS[4], // West Coast
-            DATA_POINTS.NT[5] // Red Centre
+            DATA_POINTS.NSW[1], DATA_POINTS.NSW[4], DATA_POINTS.NSW[5], 
+            DATA_POINTS.VIC[1], DATA_POINTS.VIC[2], 
+            DATA_POINTS.QLD[1], DATA_POINTS.QLD[2], DATA_POINTS.QLD[4], DATA_POINTS.QLD[8], 
+            DATA_POINTS.WA[1], DATA_POINTS.WA[2], DATA_POINTS.WA[4], DATA_POINTS.WA[14], 
+            DATA_POINTS.SA[1], DATA_POINTS.SA[3], DATA_POINTS.SA[11], 
+            DATA_POINTS.TAS[4], 
+            DATA_POINTS.NT[5] 
         ];
 
         const weatherCodes = {
@@ -274,8 +287,7 @@
         let map, markersLayer;
 
         function initMap() {
-            const initial = REGIONS.VIC;
-            map = L.map('map').setView(initial.center, initial.zoom);
+            map = L.map('map').setView([-25.27, 133.77], 4);
             L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
                 attribution: '&copy; CARTO',
                 maxZoom: 20
@@ -301,20 +313,39 @@
             });
         }
 
+        function zoomToBuffer(points) {
+            if (!points || points.length === 0 || !map) return;
+            let minLat = null, maxLat = null, minLon = null, maxLon = null;
+            points.forEach(p => {
+                if (typeof p.lat !== 'number' || typeof p.lon !== 'number' || isNaN(p.lat) || isNaN(p.lon)) return;
+                if (minLat === null || p.lat < minLat) minLat = p.lat;
+                if (maxLat === null || p.lat > maxLat) maxLat = p.lat;
+                if (minLon === null || p.lon < minLon) minLon = p.lon;
+                if (maxLon === null || p.lon > maxLon) maxLon = p.lon;
+            });
+            if (minLat === null) return;
+            const buffer = 0.45; 
+            try {
+                const bounds = L.latLngBounds([minLat - buffer, minLon - buffer], [maxLat + buffer, maxLon + buffer]);
+                if (bounds.isValid()) map.flyToBounds(bounds, { padding: [20, 20], duration: 1.5 });
+            } catch (e) { console.warn(e); }
+        }
+
         async function updateView(regionKey) {
             const region = REGIONS[regionKey];
             const towns = DATA_POINTS[regionKey];
-            
+            if (!region || !towns) return;
+
             document.getElementById('loading').style.display = 'flex';
             document.getElementById('map-title').textContent = `${region.name} Live Weather`;
-            
-            map.flyTo(region.center, region.zoom);
             markersLayer.clearLayers();
+            zoomToBuffer(towns);
 
             try {
                 const lats = towns.map(t => t.lat).join(',');
                 const lons = towns.map(t => t.lon).join(',');
-                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lons}&current=temperature_2m,weather_code,wind_speed_10m&timezone=Australia%2FSydney`;
+                // Added daily=temperature_2m_max to the request
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lons}&current=temperature_2m,weather_code,wind_speed_10m&daily=temperature_2m_max&timezone=Australia%2FSydney&forecast_days=1`;
 
                 const response = await fetch(url);
                 const data = await response.json();
@@ -322,8 +353,12 @@
                 
                 results.forEach((res, index) => {
                     const town = towns[index];
+                    if (!town || !res.current) return;
+
                     const current = res.current;
                     const temp = Math.round(current.temperature_2m);
+                    const todayMax = res.daily?.temperature_2m_max?.[0];
+                    const maxDisplay = todayMax !== undefined ? Math.round(todayMax) + '°C' : 'N/A';
                     
                     const marker = L.circleMarker([town.lat, town.lon], {
                         radius: 14,
@@ -337,9 +372,9 @@
                     marker.bindPopup(`
                         <div class="weather-popup">
                             <b>${town.name}</b><hr class="my-1">
-                            <p><strong>Condition:</strong> ${getWeatherDesc(current.weather_code)}</p>
-                            <p><strong>Temperature:</strong> ${temp}°C</p>
-                            <p><strong>Wind Speed:</strong> ${current.wind_speed_10m} km/h</p>
+                            <p><strong>Now:</strong> ${temp}°C (${getWeatherDesc(current.weather_code)})</p>
+                            <p><strong>Today's Max:</strong> <span class="text-orange-600 font-bold">${maxDisplay}</span></p>
+                            <p><strong>Wind:</strong> ${current.wind_speed_10m} km/h</p>
                         </div>
                     `);
 
@@ -374,8 +409,7 @@
 
         window.onload = function() {
             initMap();
-            updateView('VIC');
-            
+            setTimeout(() => { updateView('VIC'); }, 100);
             setInterval(() => {
                 const currentRegion = document.getElementById('region-select').value;
                 updateView(currentRegion);
