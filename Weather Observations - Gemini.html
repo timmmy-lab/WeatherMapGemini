@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="refresh" content="900">
     <title>Australia - Live Weather Map</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -11,7 +10,6 @@
     <style>
         #map { height: 650px; width: 100%; border-radius: 0.5rem; }
         .weather-popup b { color: #1e40af; font-size: 1.1rem; }
-        .weather-popup p { margin: 0.2rem 0; }
         .legend {
             padding: 10px;
             font: 14px/16px Arial, sans-serif;
@@ -46,11 +44,9 @@
             font-weight: bold;
             color: #1e40af;
         }
-        .wind-arrow {
-            display: inline-block;
-            transition: transform 0.5s ease;
-            vertical-align: middle;
-        }
+        .wind-arrow { display: inline-block; transition: transform 0.5s ease; vertical-align: middle; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .loading-pulse { animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
     </style>
 </head>
 <body class="bg-slate-50 p-4 md:p-8 flex flex-col min-h-screen">
@@ -87,16 +83,16 @@
 
         <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mb-8">
             <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                <h3 class="font-semibold text-blue-800 mb-1">Live Conditions</h3>
-                <p class="text-blue-700">Markers show real-time temperatures. Popups show current wind speed and direction.</p>
+                <h3 class="font-semibold text-blue-800 mb-1">Regional Insights</h3>
+                <p class="text-blue-700">Click any marker to see current weather and a brief summary provided by Wikipedia.</p>
             </div>
             <div class="bg-green-50 p-4 rounded-lg border border-green-100">
-                <h3 class="font-semibold text-green-800 mb-1">Dynamic Bounding Box</h3>
-                <p class="text-green-700">The map automatically zooms to the selected region with a protective buffer.</p>
+                <h3 class="font-semibold text-green-800 mb-1">Dynamic Bounding</h3>
+                <p class="text-green-700">The map automatically adjusts its view to fit the markers in your selected region.</p>
             </div>
             <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
-                <h3 class="font-semibold text-slate-800 mb-1">Data Updates</h3>
-                <p class="text-slate-700">Weather data is fetched directly from Open-Meteo using real-time models.</p>
+                <h3 class="font-semibold text-slate-800 mb-1">Real-Time Updates</h3>
+                <p class="text-slate-700">Weather data is pulled directly from local sensors via Open-Meteo.</p>
             </div>
         </div>
 
@@ -105,192 +101,140 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span><strong>Data Source:</strong> Weather data provided by <a href="https://open-meteo.com/" target="_blank" class="text-blue-600 hover:underline">Open-Meteo</a>.</span>
+                <span><strong>Data Source:</strong> Open-Meteo & Wikipedia Open Search API.</span>
             </div>
         </footer>
     </div>
 
     <script>
         const REGIONS = {
-            ALL: { name: "Australia" },
-            CAPITALS: { name: "Major Cities" },
-            NSW: { name: "New South Wales" },
-            VIC: { name: "Victoria" },
-            QLD: { name: "Queensland" },
-            WA: { name: "Western Australia" },
-            SA: { name: "South Australia" },
-            TAS: { name: "Tasmania" },
-            NT: { name: "Northern Territory" },
+            ALL: { name: "Australia" }, CAPITALS: { name: "Major Cities" }, NSW: { name: "New South Wales" },
+            VIC: { name: "Victoria" }, QLD: { name: "Queensland" }, WA: { name: "Western Australia" },
+            SA: { name: "South Australia" }, TAS: { name: "Tasmania" }, NT: { name: "Northern Territory" },
             ACT: { name: "ACT" }
         };
 
         const DATA_POINTS = {
             VIC: [
-                { name: "Melbourne", lat: -37.8136, lon: 144.9631 },
-                { name: "Mildura", lat: -34.1847, lon: 142.1483 }, 
-                { name: "Mallacoota", lat: -37.5500, lon: 149.7500 }, 
-                { name: "Portland", lat: -38.3460, lon: 141.6030 }, 
-                { name: "Wodonga", lat: -36.1214, lon: 146.8872 }, 
-                { name: "Bendigo", lat: -36.7570, lon: 144.2794 }, 
-                { name: "Horsham", lat: -36.7089, lon: 142.2030 }, 
-                { name: "Bairnsdale", lat: -37.8280, lon: 147.6250 }, 
-                { name: "Echuca", lat: -36.1360, lon: 144.7470 }, 
-                { name: "Warrnambool", lat: -38.3833, lon: 142.4835 }, 
-                { name: "Swan Hill", lat: -35.3333, lon: 143.5500 }, 
-                { name: "Omeo", lat: -37.0950, lon: 147.5950 }, 
-                { name: "Geelong", lat: -38.1499, lon: 144.3617 }, 
-                { name: "Ballarat", lat: -37.5622, lon: 143.8503 }, 
+                { name: "Melbourne", lat: -37.8136, lon: 144.9631 }, { name: "Mildura", lat: -34.1847, lon: 142.1483 }, 
+                { name: "Mallacoota", lat: -37.5500, lon: 149.7500 }, { name: "Portland", lat: -38.3460, lon: 141.6030 }, 
+                { name: "Wodonga", lat: -36.1214, lon: 146.8872 }, { name: "Bendigo", lat: -36.7570, lon: 144.2794 }, 
+                { name: "Horsham", lat: -36.7089, lon: 142.2030 }, { name: "Bairnsdale", lat: -37.8280, lon: 147.6250 }, 
+                { name: "Echuca", lat: -36.1360, lon: 144.7470 }, { name: "Warrnambool", lat: -38.3833, lon: 142.4835 }, 
+                { name: "Swan Hill", lat: -35.3333, lon: 143.5500 }, { name: "Omeo", lat: -37.0950, lon: 147.5950 }, 
+                { name: "Geelong", lat: -38.1499, lon: 144.3617 }, { name: "Ballarat", lat: -37.5622, lon: 143.8503 }, 
                 { name: "Shepparton", lat: -36.3833, lon: 145.4236 } 
             ],
             NSW: [
-                { name: "Sydney", lat: -33.8688, lon: 151.2093 },
-                { name: "Broken Hill", lat: -31.9539, lon: 141.4539 }, 
-                { name: "Tweed Heads", lat: -28.1833, lon: 153.5333 }, 
-                { name: "Eden", lat: -37.0627, lon: 149.9044 }, 
-                { name: "Bourke", lat: -30.0906, lon: 145.9378 }, 
-                { name: "Tibooburra", lat: -29.4333, lon: 142.0167 }, 
-                { name: "Tamworth", lat: -31.0927, lon: 150.9320 }, 
-                { name: "Wagga Wagga", lat: -35.1150, lon: 147.3678 }, 
-                { name: "Dubbo", lat: -32.2432, lon: 148.6021 }, 
-                { name: "Coffs Harbour", lat: -30.2963, lon: 153.1141 }, 
-                { name: "Albury", lat: -36.0737, lon: 146.9135 }, 
-                { name: "Wilcannia", lat: -31.5583, lon: 143.3778 }, 
-                { name: "Narrabri", lat: -30.3250, lon: 149.7833 }, 
-                { name: "Cooma", lat: -36.2350, lon: 149.1250 }, 
-                { name: "Newcastle", lat: -32.9283, lon: 151.7817 } 
+                { name: "Sydney", lat: -33.8688, lon: 151.2093 }, { name: "Broken Hill", lat: -31.9539, lon: 141.4539 }, 
+                { name: "Tweed Heads", lat: -28.1833, lon: 153.5333 }, { name: "Eden", lat: -37.0627, lon: 149.9044 }, 
+                { name: "Bourke", lat: -30.0906, lon: 145.9378 }, { name: "Tibooburra", lat: -29.4333, lon: 142.0167 }, 
+                { name: "Tamworth", lat: -31.0927, lon: 150.9320 }, { name: "Wagga Wagga", lat: -35.1150, lon: 147.3678 }, 
+                { name: "Dubbo", lat: -32.2432, lon: 148.6021 }, { name: "Coffs Harbour", lat: -30.2963, lon: 153.1141 }, 
+                { name: "Albury", lat: -36.0737, lon: 146.9135 }, { name: "Wilcannia", lat: -31.5583, lon: 143.3778 }, 
+                { name: "Newcastle", lat: -32.9283, lon: 151.7817 }, { name: "Orange", lat: -33.2833, lon: 149.1000 },
+                { name: "Goulburn", lat: -34.7547, lon: 149.7184 }
             ],
             QLD: [
-                { name: "Brisbane", lat: -27.4698, lon: 153.0251 },
-                { name: "Cairns", lat: -16.9186, lon: 145.7710 }, 
-                { name: "Mount Isa", lat: -20.7256, lon: 139.4927 }, 
-                { name: "Cunnamulla", lat: -28.0667, lon: 145.6833 }, 
-                { name: "Weipa", lat: -12.6469, lon: 141.8767 }, 
-                { name: "Townsville", lat: -19.2590, lon: 146.8169 }, 
-                { name: "Rockhampton", lat: -23.3774, lon: 150.5100 }, 
-                { name: "Longreach", lat: -23.4411, lon: 144.2494 }, 
-                { name: "Mackay", lat: -21.1411, lon: 149.1858 }, 
-                { name: "Roma", lat: -26.5731, lon: 148.7875 },
-                { name: "Birdsville", lat: -25.8988, lon: 139.3514 },
-                { name: "Bundaberg", lat: -24.8661, lon: 152.3489 },
-                { name: "Toowoomba", lat: -27.5598, lon: 151.9507 },
-                { name: "Gladstone", lat: -23.8427, lon: 151.2593 },
-                { name: "Charleville", lat: -26.4422, lon: 146.2428 }
+                { name: "Brisbane", lat: -27.4698, lon: 153.0251 }, { name: "Cairns", lat: -16.9186, lon: 145.7710 }, 
+                { name: "Mount Isa", lat: -20.7256, lon: 139.4927 }, { name: "Cunnamulla", lat: -28.0667, lon: 145.6833 }, 
+                { name: "Townsville", lat: -19.2590, lon: 146.8169 }, { name: "Rockhampton", lat: -23.3774, lon: 150.5100 },
+                { name: "Mackay", lat: -21.1411, lon: 149.1861 }, { name: "Bundaberg", lat: -24.8661, lon: 152.3489 },
+                { name: "Longreach", lat: -23.4420, lon: 144.2490 }, { name: "Birdsville", lat: -25.8989, lon: 139.3514 },
+                { name: "Toowoomba", lat: -27.5598, lon: 151.9507 }, { name: "Charleville", lat: -26.4017, lon: 146.2383 },
+                { name: "Cooktown", lat: -15.4764, lon: 145.2472 }, { name: "Weipa", lat: -12.6475, lon: 141.8756 },
+                { name: "Gladstone", lat: -23.8431, lon: 151.2592 }
             ],
             WA: [
-                { name: "Perth", lat: -31.9505, lon: 115.8605 },
-                { name: "Wyndham", lat: -15.4825, lon: 128.1228 }, 
-                { name: "Eucla", lat: -31.6778, lon: 128.8833 }, 
-                { name: "Albany", lat: -35.0228, lon: 117.8814 }, 
-                { name: "Exmouth", lat: -21.9314, lon: 114.1236 }, 
-                { name: "Kununurra", lat: -15.7736, lon: 128.7389 }, 
-                { name: "Broome", lat: -17.9614, lon: 122.2359 }, 
-                { name: "Port Hedland", lat: -20.3107, lon: 118.6011 }, 
-                { name: "Newman", lat: -23.3539, lon: 119.7319 }, 
-                { name: "Kalgoorlie", lat: -30.7489, lon: 121.4658 }, 
-                { name: "Esperance", lat: -33.8614, lon: 121.8914 },
-                { name: "Geraldton", lat: -28.7744, lon: 114.6089 },
-                { name: "Carnarvon", lat: -24.8877, lon: 113.6621 },
-                { name: "Meekatharra", lat: -26.5932, lon: 118.4984 },
-                { name: "Bunbury", lat: -33.3271, lon: 115.6369 }
+                { name: "Perth", lat: -31.9505, lon: 115.8605 }, { name: "Wyndham", lat: -15.4825, lon: 128.1228 }, 
+                { name: "Eucla", lat: -31.6778, lon: 128.8833 }, { name: "Albany", lat: -35.0228, lon: 117.8814 }, 
+                { name: "Broome", lat: -17.9614, lon: 122.2359 }, { name: "Kalgoorlie", lat: -30.7489, lon: 121.4658 },
+                { name: "Geraldton", lat: -28.7744, lon: 114.6089 }, { name: "Esperance", lat: -33.8614, lon: 121.8914 },
+                { name: "Port Hedland", lat: -20.3106, lon: 118.5769 }, { name: "Exmouth", lat: -21.9317, lon: 114.1256 },
+                { name: "Carnarvon", lat: -24.8877, lon: 113.6621 }, { name: "Halls Creek", lat: -18.2236, lon: 127.6689 },
+                { name: "Bunbury", lat: -33.3256, lon: 115.6394 }, { name: "Meekatharra", lat: -26.5931, lon: 118.4981 },
+                { name: "Karratha", lat: -20.7353, lon: 116.8458 }
             ],
             SA: [
-                { name: "Adelaide", lat: -34.9285, lon: 138.6007 },
-                { name: "Oodnadatta", lat: -27.5469, lon: 135.4461 }, 
-                { name: "Mount Gambier", lat: -37.8284, lon: 140.7804 }, 
-                { name: "Ceduna", lat: -32.1250, lon: 133.6733 }, 
-                { name: "Marla", lat: -27.1594, lon: 133.6219 }, 
-                { name: "Renmark", lat: -34.1667, lon: 140.7500 }, 
-                { name: "Port Lincoln", lat: -34.7333, lon: 135.8667 }, 
-                { name: "Coober Pedy", lat: -29.0139, lon: 134.7544 },
-                { name: "Port Augusta", lat: -32.4931, lon: 137.7625 },
-                { name: "Whyalla", lat: -33.0333, lon: 137.5833 },
-                { name: "Victor Harbor", lat: -35.5500, lon: 138.6167 },
-                { name: "Naracoorte", lat: -36.9542, lon: 140.7431 },
-                { name: "Tarcoola", lat: -30.7042, lon: 134.5619 },
-                { name: "Roxby Downs", lat: -30.5630, lon: 136.8770 },
-                { name: "Border Town", lat: -36.3167, lon: 140.7667 }
+                { name: "Adelaide", lat: -34.9285, lon: 138.6007 }, { name: "Oodnadatta", lat: -27.5469, lon: 135.4461 }, 
+                { name: "Mount Gambier", lat: -37.8284, lon: 140.7804 }, { name: "Coober Pedy", lat: -29.0139, lon: 134.7544 },
+                { name: "Port Lincoln", lat: -34.7240, lon: 135.8611 }, { name: "Whyalla", lat: -33.0333, lon: 137.5833 },
+                { name: "Port Augusta", lat: -32.4931, lon: 137.7639 }, { name: "Ceduna", lat: -32.1264, lon: 133.6739 },
+                { name: "Renmark", lat: -34.1739, lon: 140.7431 }, { name: "Murray Bridge", lat: -35.1228, lon: 139.2733 },
+                { name: "Woomera", lat: -31.1997, lon: 136.8153 }, { name: "Tarcoola", lat: -30.7042, lon: 134.5656 },
+                { name: "Roxby Downs", lat: -30.5636, lon: 136.8789 }, { name: "Kingscote", lat: -35.6550, lon: 137.6389 },
+                { name: "Victor Harbor", lat: -35.5500, lon: 138.6167 }
             ],
             TAS: [
-                { name: "Hobart", lat: -42.8821, lon: 147.3272 },
-                { name: "Smithton", lat: -40.8436, lon: 145.1206 }, 
-                { name: "St Helens", lat: -41.3219, lon: 148.2472 }, 
-                { name: "Queenstown", lat: -42.0833, lon: 145.5500 }, 
-                { name: "Launceston", lat: -41.4332, lon: 147.1441 },
-                { name: "Burnie", lat: -41.0558, lon: 145.9081 },
-                { name: "Devonport", lat: -41.1771, lon: 146.3452 },
-                { name: "Strahan", lat: -42.1500, lon: 145.3333 },
-                { name: "Geeveston", lat: -43.1667, lon: 146.9167 },
-                { name: "Swansea", lat: -42.1220, lon: 148.0750 },
-                { name: "Currie (King Is)", lat: -39.9311, lon: 143.8508 },
-                { name: "Whitemark (Flinders Is)", lat: -40.1200, lon: 148.0167 },
-                { name: "New Norfolk", lat: -42.7828, lon: 147.0594 },
-                { name: "Ross", lat: -42.0309, lon: 147.4934 },
-                { name: "Scottsdale", lat: -41.1583, lon: 147.5147 }
+                { name: "Hobart", lat: -42.8821, lon: 147.3272 }, { name: "Queenstown", lat: -42.0833, lon: 145.5500 }, 
+                { name: "Launceston", lat: -41.4332, lon: 147.1441 }, { name: "St Helens", lat: -41.3219, lon: 148.2472 },
+                { name: "Burnie", lat: -41.0558, lon: 145.9031 }, { name: "Devonport", lat: -41.1772, lon: 146.3453 },
+                { name: "Strahan", lat: -42.1500, lon: 145.3333 }, { name: "Smithton", lat: -40.8436, lon: 145.1208 },
+                { name: "Scottsdale", lat: -41.1592, lon: 147.5147 }, { name: "Swansea", lat: -42.1233, lon: 148.0753 },
+                { name: "New Norfolk", lat: -42.7828, lon: 147.0594 }, { name: "Geeveston", lat: -43.1642, lon: 146.9272 },
+                { name: "King Island", lat: -39.8833, lon: 143.9167 }, { name: "Flinders Island", lat: -40.0167, lon: 147.9333 },
+                { name: "Port Arthur", lat: -43.1414, lon: 147.8489 }
             ],
             NT: [
-                { name: "Darwin", lat: -12.4634, lon: 130.8456 },
-                { name: "Alice Springs", lat: -23.6980, lon: 133.8807 },
-                { name: "Katherine", lat: -14.4652, lon: 132.2635 },
-                { name: "Tennant Creek", lat: -19.6433, lon: 134.1901 },
-                { name: "Nhulunbuy", lat: -12.1833, lon: 136.7833 },
-                { name: "Yulara (Uluru)", lat: -25.2425, lon: 130.9889 },
-                { name: "Jabiru", lat: -12.6681, lon: 132.8361 },
-                { name: "Alyangula", lat: -13.8475, lon: 136.4192 },
-                { name: "Elliott", lat: -17.5539, lon: 133.5383 },
-                { name: "Timber Creek", lat: -15.6461, lon: 130.4756 },
-                { name: "Borroloola", lat: -16.0667, lon: 136.3000 },
-                { name: "Lajamanu", lat: -18.3333, lon: 132.8333 },
-                { name: "Kaltukatjara", lat: -25.0244, lon: 129.2319 },
-                { name: "Tiwi Islands", lat: -11.6667, lon: 130.8333 },
-                { name: "Mataranka", lat: -14.9239, lon: 133.0675 }
+                { name: "Darwin", lat: -12.4634, lon: 130.8456 }, { name: "Alice Springs", lat: -23.6980, lon: 133.8807 },
+                { name: "Yulara (Uluru)", lat: -25.2425, lon: 130.9889 }, { name: "Katherine", lat: -14.4651, lon: 132.2635 },
+                { name: "Tennant Creek", lat: -19.6433, lon: 134.1903 }, { name: "Nhulunbuy", lat: -12.1819, lon: 136.7806 },
+                { name: "Jabiru", lat: -12.6642, lon: 132.8361 }, { name: "Pine Creek", lat: -13.8236, lon: 131.8356 },
+                { name: "Mataranka", lat: -14.9250, lon: 133.0650 }, { name: "Larrimah", lat: -15.5750, lon: 133.2167 },
+                { name: "Elliott", lat: -17.5539, lon: 133.5394 }, { name: "Barrow Creek", lat: -21.5314, lon: 133.8864 },
+                { name: "Ti Tree", lat: -22.1333, lon: 133.4167 }, { name: "Kulgera", lat: -25.8422, lon: 133.2981 },
+                { name: "Wadeye", lat: -14.2344, lon: 129.5211 }
             ],
             ACT: [
-                { name: "Canberra City", lat: -35.2809, lon: 149.1300 },
-                { name: "Tuggeranong", lat: -35.4167, lon: 149.0667 },
-                { name: "Gungahlin", lat: -35.1833, lon: 149.1333 },
-                { name: "Belconnen", lat: -35.2389, lon: 149.0661 },
-                { name: "Woden Valley", lat: -35.3456, lon: 149.0856 },
-                { name: "Hall", lat: -35.1683, lon: 149.0683 },
-                { name: "Tharwa", lat: -35.5083, lon: 149.0667 },
-                { name: "Oaks Estate", lat: -35.3444, lon: 149.2319 },
-                { name: "Uriarra Village", lat: -35.2467, lon: 148.9481 },
-                { name: "Molonglo Valley", lat: -35.2917, lon: 149.0333 },
-                { name: "Weston Creek", lat: -35.3411, lon: 149.0531 },
-                { name: "Dickson", lat: -35.2503, lon: 149.1367 },
-                { name: "Fyshwick", lat: -35.3283, lon: 149.1683 },
-                { name: "Hume", lat: -35.3850, lon: 149.1617 },
-                { name: "Nicholls", lat: -35.1894, lon: 149.0911 }
+                { name: "Canberra City", lat: -35.2809, lon: 149.1300 }, { name: "Belconnen", lat: -35.2386, lon: 149.0661 },
+                { name: "Tuggeranong", lat: -35.4244, lon: 149.0886 }, { name: "Gungahlin", lat: -35.1831, lon: 149.1331 },
+                { name: "Woden", lat: -35.3453, lon: 149.0869 }, { name: "Tharwa", lat: -35.5086, lon: 149.0672 },
+                { name: "Hall", lat: -35.1683, lon: 149.0683 }, { name: "Molonglo", lat: -35.3053, lon: 149.0436 },
+                { name: "Hume", lat: -35.3789, lon: 149.1678 }, { name: "Majura", lat: -35.2500, lon: 149.2000 },
+                { name: "Uriarra", lat: -35.2458, lon: 148.9489 }, { name: "Stromlo", lat: -35.3183, lon: 149.0117 },
+                { name: "Williamsdale", lat: -35.5756, lon: 149.1264 }, { name: "Oaks Estate", lat: -35.3444, lon: 149.2319 },
+                { name: "Tidbinbilla", lat: -35.4578, lon: 148.9189 }
             ]
         };
 
-        // Populate ALL and CAPITALS after all states are defined
         DATA_POINTS.CAPITALS = [
             DATA_POINTS.NSW[0], DATA_POINTS.VIC[0], DATA_POINTS.QLD[0], 
             DATA_POINTS.WA[0], DATA_POINTS.SA[0], DATA_POINTS.TAS[0], 
             DATA_POINTS.NT[0], DATA_POINTS.ACT[0]
         ];
-
-        DATA_POINTS.ALL = [
-            ...DATA_POINTS.CAPITALS,
-            DATA_POINTS.NSW[1], DATA_POINTS.VIC[1], DATA_POINTS.QLD[1], 
-            DATA_POINTS.WA[1], DATA_POINTS.SA[1], DATA_POINTS.NT[1],
-            DATA_POINTS.TAS[1], DATA_POINTS.QLD[2], DATA_POINTS.WA[2]
-        ];
-
-        const weatherCodes = {
-            0: "Clear Sky", 1: "Mainly Clear", 2: "Partly Cloudy", 3: "Overcast",
-            45: "Fog", 48: "Depositing Rime Fog", 51: "Light Drizzle", 61: "Slight Rain",
-            71: "Slight Snow", 80: "Slight Rain Showers", 95: "Thunderstorm"
-        };
-
-        function getWeatherDesc(code) { return weatherCodes[code] || "Variable Conditions"; }
-        function getColor(t) { return t > 30 ? "#ef4444" : t > 25 ? "#f59e0b" : t > 20 ? "#10b981" : "#3b82f6"; }
         
+        DATA_POINTS.ALL = Object.keys(DATA_POINTS)
+            .filter(k => k !== 'ALL' && k !== 'CAPITALS')
+            .reduce((acc, k) => acc.concat(DATA_POINTS[k]), []);
+
+        const factsCache = new Map();
+
+        async function getTownFacts(townName, region) {
+            const cacheKey = `${townName}-${region}`;
+            if (factsCache.has(cacheKey)) return factsCache.get(cacheKey);
+
+            try {
+                const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(townName)}`;
+                const response = await fetch(url);
+                if (!response.ok) throw new Error("Wiki search failed");
+                const data = await response.json();
+                if (data.type === 'disambiguation' || !data.extract) {
+                    return `${townName} is a notable locality in ${region}, Australia.`;
+                }
+                const summary = data.extract.split('. ').slice(0, 2).join('. ') + '.';
+                factsCache.set(cacheKey, summary);
+                return summary;
+            } catch (error) {
+                return `${townName} is an important regional center in ${region}, Australia.`;
+            }
+        }
+
         function getWindDirection(deg) {
             const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-            const index = Math.round(deg / 45) % 8;
-            return directions[index];
+            return directions[Math.round(deg / 45) % 8];
         }
+
+        function getColor(t) { return t > 30 ? "#ef4444" : t > 25 ? "#f59e0b" : t > 20 ? "#10b981" : "#3b82f6"; }
 
         let map, markersLayer;
 
@@ -306,176 +250,149 @@
             const legend = L.control({position: 'bottomright'});
             legend.onAdd = function () {
                 const div = L.DomUtil.create('div', 'legend');
-                const grades = [31, 26, 21, 0];
-                const labels = ["> 30°C", "26-30°C", "21-25°C", "< 21°C"];
                 div.innerHTML = '<h4 class="font-bold mb-1 text-slate-700 text-xs uppercase text-center">Temp</h4>';
-                for (let i = 0; i < grades.length; i++) {
-                    div.innerHTML += '<div class="flex items-center mb-1"><i style="background:' + getColor(grades[i]) + '"></i> ' + labels[i] + '</div>';
-                }
+                [[31, "> 30°C"], [26, "26-30°C"], [21, "21-25°C"], [0, "< 21°C"]].forEach(([val, label]) => {
+                    div.innerHTML += `<div class="flex items-center mb-1"><i style="background:${getColor(val)}"></i> ${label}</div>`;
+                });
                 return div;
             };
             legend.addTo(map);
 
-            document.getElementById('region-select').addEventListener('change', (e) => {
-                updateView(e.target.value);
-            });
+            document.getElementById('region-select').addEventListener('change', (e) => updateView(e.target.value));
         }
 
-        function zoomToBuffer(points) {
-            if (!points || points.length === 0 || !map) return;
-            let minLat = null, maxLat = null, minLon = null, maxLon = null;
-            points.forEach(p => {
-                const lat = parseFloat(p.lat);
-                const lon = parseFloat(p.lon);
-                if (isNaN(lat) || isNaN(lon)) return;
-                
-                if (minLat === null || lat < minLat) minLat = lat;
-                if (maxLat === null || lat > maxLat) maxLat = lat;
-                if (minLon === null || lon < minLon) minLon = lon;
-                if (maxLon === null || lon > maxLon) maxLon = lon;
-            });
-            
-            if (minLat === null || maxLat === null || minLon === null || maxLon === null) return;
-            
-            const buffer = 0.55; // Slightly larger buffer for better visualization
-            try {
-                const bounds = L.latLngBounds([minLat - buffer, minLon - buffer], [maxLat + buffer, maxLon + buffer]);
-                if (bounds.isValid()) {
-                    map.flyToBounds(bounds, { padding: [20, 20], duration: 1.5 });
-                }
-            } catch (e) { console.warn("Boundary error:", e); }
-        }
+        async function updateView(regionKey, isInitial = false) {
+            const rawTowns = DATA_POINTS[regionKey];
+            if (!rawTowns) return;
 
-        async function updateView(regionKey) {
-            const region = REGIONS[regionKey];
-            const towns = DATA_POINTS[regionKey];
-            if (!region || !towns || !map) return;
+            const validTowns = rawTowns.filter(t => 
+                t && 
+                typeof t.lat === 'number' && !isNaN(t.lat) && 
+                typeof t.lon === 'number' && !isNaN(t.lon)
+            );
+
+            if (validTowns.length === 0) return;
 
             document.getElementById('loading').style.display = 'flex';
-            document.getElementById('map-title').textContent = `${region.name} Live Weather`;
+            document.getElementById('map-title').textContent = `${REGIONS[regionKey].name} Live Weather`;
             markersLayer.clearLayers();
-            zoomToBuffer(towns);
+
+            const points = validTowns.map(t => [t.lat, t.lon]);
+            const bounds = L.latLngBounds(points);
+            
+            if (bounds.isValid()) {
+                map.invalidateSize();
+                const fitOptions = { 
+                    padding: [50, 50],
+                    animate: !isInitial,
+                    duration: 1.5,
+                    maxZoom: (regionKey === 'CAPITALS' || regionKey === 'ALL') ? 4 : 7
+                };
+
+                if (isInitial) {
+                    map.fitBounds(bounds.pad(0.2), { padding: [50, 50] });
+                } else {
+                    map.flyToBounds(bounds.pad(0.2), fitOptions);
+                }
+            }
 
             try {
-                const validTowns = towns.filter(t => !isNaN(parseFloat(t.lat)) && !isNaN(parseFloat(t.lon)));
-                if (validTowns.length === 0) throw new Error("No valid coordinates for region");
+                const queryLats = validTowns.map(t => t.lat).join(',');
+                const queryLons = validTowns.map(t => t.lon).join(',');
+                const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${queryLats}&longitude=${queryLons}&current=temperature_2m,wind_speed_10m,wind_direction_10m&daily=temperature_2m_max&timezone=auto&forecast_days=1`;
 
-                // Split requests if towns > 20 to avoid API limits if necessary, though 15 is fine.
-                const lats = validTowns.map(t => t.lat).join(',');
-                const lons = validTowns.map(t => t.lon).join(',');
-                
-                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lons}&current=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m&daily=temperature_2m_max&timezone=Australia%2FSydney&forecast_days=1`;
+                const res = await fetch(weatherUrl);
+                const weatherData = await res.json();
+                const results = Array.isArray(weatherData) ? weatherData : [weatherData];
 
-                const response = await fetch(url);
-                const data = await response.json();
-                const results = Array.isArray(data) ? data : [data];
-                
-                results.forEach((res, index) => {
-                    const town = validTowns[index];
+                results.forEach((res, i) => {
+                    const town = validTowns[i];
                     if (!town || !res.current) return;
 
-                    const current = res.current;
-                    const temp = Math.round(current.temperature_2m);
-                    const windSpd = Math.round(current.wind_speed_10m);
-                    const windDeg = current.wind_direction_10m;
-                    const windCard = getWindDirection(windDeg);
-                    const todayMax = res.daily?.temperature_2m_max?.[0];
-                    const maxDisplay = todayMax !== undefined ? Math.round(todayMax) + '°C' : 'N/A';
-                    
-                    const googleWeatherUrl = `https://www.google.com/search?q=weather+${encodeURIComponent(town.name + ', ' + regionKey + ', Australia')}`;
+                    const cur = res.current;
+                    const temp = Math.round(cur.temperature_2m);
+                    const windSpd = Math.round(cur.wind_speed_10m);
+                    const windDeg = cur.wind_direction_10m;
+                    const todayMax = Math.round(res.daily?.temperature_2m_max?.[0] || temp);
 
                     const marker = L.circleMarker([town.lat, town.lon], {
-                        radius: 14,
-                        fillColor: getColor(temp),
-                        color: "#fff",
-                        weight: 2,
-                        opacity: 1,
-                        fillOpacity: 0.9
-                    });
+                        radius: 14, fillColor: getColor(temp), color: "#fff", weight: 2, opacity: 1, fillOpacity: 0.9
+                    }).addTo(markersLayer);
 
-                    marker.bindPopup(`
-                        <div class="weather-popup" style="min-width: 200px;">
-                            <b>${town.name}</b><hr class="my-1">
-                            <div class="grid grid-cols-2 gap-2 text-sm mb-2">
-                                <div>
-                                    <span class="text-gray-500 text-xs font-semibold">TEMP</span><br>
-                                    <strong class="text-lg">${temp}°C</strong>
+                    marker.bindTooltip(`${temp}`, { permanent: true, direction: 'center', className: 'temp-label' });
+
+                    marker.on('click', async () => {
+                        const popupContent = (factText, isLoading = false) => `
+                            <div class="weather-popup" style="min-width: 230px; max-width: 260px;">
+                                <div class="flex justify-between items-start mb-1">
+                                    <b class="leading-tight">${town.name}</b>
+                                    <span class="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded uppercase font-bold">${regionKey}</span>
                                 </div>
-                                <div>
-                                    <span class="text-gray-500 text-xs font-semibold">TODAY MAX</span><br>
-                                    <span class="text-orange-600 font-bold text-lg">${maxDisplay}</span>
-                                </div>
-                            </div>
-                            <p class="text-xs mb-1"><strong>Condition:</strong> ${getWeatherDesc(current.weather_code)}</p>
-                            <div class="bg-slate-50 p-2 rounded border border-slate-100 mb-2">
-                                <span class="text-gray-500 text-[10px] font-bold uppercase block mb-1">Wind</span>
-                                <div class="flex items-center gap-3">
-                                    <div class="flex flex-col">
-                                        <span class="text-xs font-bold text-slate-700">${windSpd} <span class="text-[10px] font-normal">km/h</span></span>
+                                <hr class="my-2 border-slate-100">
+                                <div class="grid grid-cols-2 gap-2 text-sm mb-3">
+                                    <div class="bg-blue-50/50 p-1.5 rounded text-center">
+                                        <span class="text-gray-500 text-[10px] font-bold block">CURRENT</span>
+                                        <strong class="text-lg">${temp}°C</strong>
                                     </div>
-                                    <div class="flex items-center gap-1 border-l pl-3 border-slate-200">
-                                        <div class="wind-arrow" style="transform: rotate(${windDeg}deg)">
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1e40af" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                                                <line x1="12" y1="19" x2="12" y2="5"></line>
-                                                <polyline points="5 12 12 5 19 12"></polyline>
-                                            </svg>
-                                        </div>
-                                        <span class="text-xs font-bold text-blue-800">${windCard}</span>
+                                    <div class="bg-orange-50/50 p-1.5 rounded text-center">
+                                        <span class="text-gray-500 text-[10px] font-bold block">TODAY MAX</span>
+                                        <strong class="text-lg text-orange-600">${todayMax}°C</strong>
                                     </div>
                                 </div>
+                                <div class="mb-3">
+                                    <div class="flex justify-between items-baseline mb-1">
+                                        <span class="text-slate-400 text-[10px] font-bold uppercase block">Quick Facts</span>
+                                        <span class="text-slate-300 text-[9px] italic">Source: Wikipedia</span>
+                                    </div>
+                                    <p class="text-xs text-slate-700 leading-relaxed italic border-l-2 border-blue-200 pl-2 ${isLoading ? 'loading-pulse' : ''}">
+                                        ${factText}
+                                    </p>
+                                </div>
+                                <div class="bg-slate-50 p-2 rounded border border-slate-100 mb-2 flex items-center justify-between">
+                                    <div class="text-xs">
+                                        <span class="text-slate-500 font-bold text-[10px] block uppercase">Wind Speed</span>
+                                        <span class="font-bold">${windSpd} km/h ${getWindDirection(windDeg)}</span>
+                                    </div>
+                                    <div class="wind-arrow text-blue-800" style="transform: rotate(${windDeg}deg)">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                            <line x1="12" y1="19" x2="12" y2="5"></line>
+                                            <polyline points="5 12 12 5 19 12"></polyline>
+                                        </svg>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="pt-2 border-t border-slate-100 text-center">
-                                <a href="${googleWeatherUrl}" target="_blank" class="text-blue-600 hover:text-blue-800 text-xs font-semibold flex items-center justify-center gap-1">
-                                    <span>View Details</span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                    </svg>
-                                </a>
-                            </div>
-                        </div>
-                    `);
+                        `;
 
-                    marker.bindTooltip(`${temp}`, {
-                        permanent: true,
-                        direction: 'center',
-                        className: 'temp-label'
+                        marker.bindPopup(popupContent("Searching local history...", true)).openPopup();
+                        const facts = await getTownFacts(town.name, REGIONS[regionKey].name);
+                        marker.setPopupContent(popupContent(facts, false));
                     });
-
-                    markersLayer.addLayer(marker);
                 });
 
                 document.getElementById('loading').style.display = 'none';
                 updateTimestamp();
             } catch (err) {
-                console.error("Failed to fetch weather:", err);
-                document.getElementById('loading').textContent = "Connection Error.";
+                console.error(err);
+                document.getElementById('loading').textContent = "Weather retrieval failed.";
             }
         }
 
         function updateTimestamp() {
-            const timeEl = document.getElementById('collection-time');
             const now = new Date();
-            const formatter = new Intl.DateTimeFormat('en-AU', {
-                timeZone: 'Australia/Sydney',
-                dateStyle: 'medium',
-                timeStyle: 'short',
-                hour12: true
-            });
-            timeEl.textContent = `Live data updated at ${formatter.format(now)}`;
+            const formatter = new Intl.DateTimeFormat('en-AU', { timeZone: 'Australia/Sydney', dateStyle: 'medium', timeStyle: 'short' });
+            document.getElementById('collection-time').textContent = `Updated: ${formatter.format(now)} AEST`;
         }
 
-        window.onload = function() {
+        window.onload = () => {
             initMap();
-            setTimeout(() => { 
-                if (map) updateView('VIC'); 
-            }, 100);
-            
-            setInterval(() => {
-                const select = document.getElementById('region-select');
-                if (select && map) {
-                    updateView(select.value);
+            setTimeout(() => {
+                try {
+                    updateView('VIC', true);
+                } catch(e) {
+                    console.error("Initial load error:", e);
+                    document.getElementById('loading').style.display = 'none';
                 }
-            }, 900000);
+            }, 300);
         };
     </script>
 </body>
